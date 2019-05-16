@@ -9,7 +9,7 @@ class Device{
         this.validate();
     }
 
-    toDTO(){
+    serialize(){
         return {
             DeviceId: this.deviceID,
             EnergyUsage: this.energyUsage

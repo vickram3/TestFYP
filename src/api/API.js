@@ -66,7 +66,7 @@ module.exports.sendProjectData = (client, keyPair, projectData) =>{
             'apikey': keyPair.apiKey,
             'Content-Type': 'application/json'
         },
-        body: projectData.toDTO(),
+        body: projectData.serialize(),
         json: true
     };
 

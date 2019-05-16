@@ -64,22 +64,22 @@ class ProjectData{
         validate.datetimeString(this.datetime, "DateTime");
     }
 
-    devicesToDTO(){
+    serializeDevices(){
 
-        var devicesDTO = [];
+        var serialized_Devices = [];
 
         for(var i = 0; i < this.devices.length; i++){
-            devicesDTO.push(this.devices[i].toDTO());
+            serialized_Devices.push(this.devices[i].serialize());
         }
 
-        return devicesDTO;
+        return serialized_Devices;
     }
 
-    toDTO(){
+    serialize(){
         return {
             Project: this.project,
             DateTime: this.datetime,
-            Devices: this.devicesToDTO(),
+            Devices: this.serializeDevices(),
             TotalEnergyUsage: this.totalEnergyUsage,
             AverageRT: this.averageRT,
             Geolocation: this.geolocation
