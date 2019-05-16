@@ -2,7 +2,6 @@ var besc_client = require("../src/index");
 
 var keypair = new besc_client.keyPair("1", "abc123");
 
-const queryOptions = besc_client.ProjectDataOptions;
 const ProjectData = besc_client.ProjectData;
 const Device = besc_client.Device;
 
