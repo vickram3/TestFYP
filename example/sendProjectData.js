@@ -7,6 +7,7 @@ var keypair = new besc_client.keyPair("1", "abc123");
 const ProjectData = besc_client.ProjectData;
 const Device = besc_client.Device;
 
+//var host_client = new besc_client.Host("http://localhost:3001");
 var host_client = besc_client.Host.createDefault();
 
 (async () =>{ 
