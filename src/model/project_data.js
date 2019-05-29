@@ -89,9 +89,12 @@ class ProjectData{
 
         var hash = crypto.createHash("sha1").update(JSON.stringify(dataToSend), "binary").digest("hex");
 
-        dataToSend.checksum = hash;
+        var serialized = {
+            data : dataToSend ,
+            checksum : hash
+        };
 
-        return dataToSend;
+        return serialized;
     }
 }
 

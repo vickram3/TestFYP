@@ -11,7 +11,7 @@ All working examples is inside the example folder
 
 **Added checksum feature**
 
-For those who are not using this client, Data send to ESS API need to be in json format as below and in orders :
+For those who are not using this client, need to add in few header for it. Data send to ESS API need to be in json format as below and in orders :
 ```js
 {
     "Project" : "",
@@ -28,15 +28,24 @@ For those who are not using this client, Data send to ESS API need to be in json
     ], 
     "TotalEnergyUsage": 310.0, 
     "AverageRT": 188.0, 
-    "Geolocation": "Selangor",
-    "checksum" : "sha1_string of the whole json data"
+    "Geolocation": "Selangor"
 }
 ```
-Checksum
-- sha1 string of the whole json data, excluding the checksum itself
+
+## Header
+
+Content-Type
+- application/json
+
+**apikey**
+- the apikey string that get from BESC
+
+**checksum**
+- need to be added in header
+- sha1 string of the whole json data
 - JSON.stringify(object)
 
-As example,
+As example for checksum,
 ```js
 var object = {
     Project : "",

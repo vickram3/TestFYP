@@ -59,14 +59,17 @@ module.exports.sendProjectData = (client, keyPair, projectData) =>{
     client.setProjectId(keyPair.projectId);
     client.setEndPoint(besc_host.endpoints.project);
 
+    var serializedData = projectData.serialize();
+
     var options = {
         method: "POST",
         uri: client.buildUrl(),
         headers:{
             'apikey': keyPair.apiKey,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'checksum' : serializedData.checksum
         },
-        body: projectData.serialize(),
+        body: serializedData.data,
         json: true
     };
 
