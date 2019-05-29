@@ -1,6 +1,7 @@
 var validate = require('../utils/validate');
 var dateUtil = require('../utils/dateConvert'); 
 const Device = require("./device").default;
+const crypto = require("crypto");
 
 class ProjectData{
 
@@ -76,7 +77,8 @@ class ProjectData{
     }
 
     serialize(){
-        return {
+
+        var dataToSend = {
             Project: this.project,
             DateTime: this.datetime,
             Devices: this.serializeDevices(),
@@ -84,6 +86,12 @@ class ProjectData{
             AverageRT: this.averageRT,
             Geolocation: this.geolocation
         };
+
+        var hash = crypto.createHash("sha1").update(JSON.stringify(dataToSend), "binary").digest("hex");
+
+        dataToSend.checkSum = hash;
+
+        return dataToSend;
     }
 }
 
