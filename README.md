@@ -67,7 +67,6 @@ var object = {
 
 var checksum = sha1( JSON.stringify(object) );
 
-object.checksum = checksum;
 ```
 Then send the object as JSON to the ESS API.
 
