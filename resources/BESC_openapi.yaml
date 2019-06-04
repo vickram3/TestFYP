@@ -1,0 +1,291 @@
+openapi: 3.0.1
+info:
+  title: BESC ESS API
+  description: BESC ESS API for energy saving.
+  version: 1.0.1
+# sample server
+# https will be used, http for dev purpose
+# there will be a testing server
+servers:
+- url: http://carboapi.besc.online/besc-data/energysaving
+security:
+- ApiKeyAuth: []
+paths:
+  /project/{project_id}:
+    get:
+      summary: Get project saving last 5 data by default
+      description: Returns the project data.
+      operationId: getProjectRecords
+      parameters:
+      - name: project_id
+        in: path
+        description: Project id from the BESC project
+        required: true
+        schema:
+          type: string
+      - name: offset
+        in: query
+        description: Fetching data start from n number of records in descending order.
+        schema:
+          minimum: 0
+          type: integer
+      - name: limit
+        in: query
+        description: set total number of data to return back as response
+        schema:
+          maximum: 100
+          minimum: 1
+          type: integer
+      - name: start_date
+        in: query
+        description: Fetching data after start date in epoch seconds.
+        schema:
+          type: integer
+      - name: end_date
+        in: query
+        description: Fetching data before end date in epoch seconds.
+        schema:
+          type: integer
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectRecords'
+        400:
+          description: invalid content
+          content: {}
+        401:
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              schema:
+                type: string
+          content: {}
+        409:
+          description: invalid argument
+          content: {}
+    post:
+      summary: Receive project energy saving data
+      description: Receive project energy saving data
+      operationId: setProjectRecord
+      parameters:
+      - name: checksum
+        in: header
+        description: Checksum of the project data
+        required: true
+        schema:
+          type: string
+      - name: project_id
+        in: path
+        description: Project id from the BESC project
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Project data input
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataInput'
+        required: true
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataPushResponse'
+        400:
+          description: invalid content
+          content: {}
+        401:
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              schema:
+                type: string
+          content: {}
+        409:
+          description: invalid argument
+          content: {}
+  /debugs/{project_id}/last:
+    get:
+      summary: Returns the last batch of project data that stored in the database.
+      description: Returns all the project data that stored into the database previously.
+      operationId: getLastProjectRecord
+      parameters:
+      - name: project_id
+        in: path
+        description: Project id from the BESC project
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties: {}
+        400:
+          description: invalid content
+          content: {}
+        401:
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              schema:
+                type: string
+          content: {}
+        409:
+          description: invalid argument
+          content: {}
+
+  /blockchain/{project_id}/txHash/{txHash}:
+    get:
+      summary: Returns the validity of data by transaction hash.
+      description: Returns the validity of data by transaction hash.
+      operationId: verifyTxHashRecord
+      parameters:
+      - name: project_id
+        in: path
+        description: Project id from the BESC project
+        required: true
+        schema:
+          type: string
+      - name: txHash
+        in: path
+        description: txHash that is generated and send to the blockchain by BESC ESS API
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties: {}
+        400:
+          description: invalid content
+          content: {}
+        401:
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              schema:
+                type: string
+          content: {}
+        409:
+          description: invalid argument
+          content: {}
+components:
+  schemas:
+    DataInput:
+      required:
+      - Data
+      type: object
+      properties:
+        Data:
+          $ref: '#/components/schemas/Data'
+      description: Data input for energy saving
+    ProjectRecords:
+      required:
+      - Data
+      type: object
+      properties:
+        Data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Data'
+    DataPushResponse:
+      required:
+      - EnergySavingHash
+      - Project
+      - Status
+      - _id
+      - txHash
+      type: object
+      properties:
+        _id:
+          type: string
+          description: id for the whole data set
+        Project:
+          type: string
+          description: Project id
+        EnergySavingHash:
+          type: string
+          description: the hash generated for the energy saving hash
+        Status:
+          type: string
+          description: the status of this data recorded
+          # Recorded - data saved locally
+          # Failed - fail to save data
+          # Transacted - energy data is calculated
+          enum:
+          - Recorded
+          - Failed
+          - Transacted
+        txHash:
+          type: string
+          description: txHash that is generated and send to the blockchain
+
+    Data:
+      required:
+      - Project
+      - AverageRT
+      - DateTime
+      - Devices
+      - Geolocation
+      - TotalEnergyUsage
+      type: object
+      properties:
+        Project:
+          type: string
+        DateTime:
+          type: string
+        Devices:
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/Devices'
+        TotalEnergyUsage:
+          type: number
+        AverageRT:
+          type: number
+        Geolocation:
+          type: string
+        TxHash:
+          type: string
+          description: the transaction hash that send to blockchain
+    Devices:
+      required:
+      - DeviceId
+      - EnergyUsage
+      type: object
+      properties:
+        DeviceId:
+          type: string
+        EnergyUsage:
+          type: number
+  responses:
+    UnauthorizedError:
+      description: API key is missing or invalid
+      headers:
+        WWW_Authenticate:
+          schema:
+            type: string
+      content: {}
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: apikey
+      in: header

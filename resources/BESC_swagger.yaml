@@ -1,0 +1,264 @@
+swagger: "2.0"
+info:
+  version: 1.0.1
+  title: BESC ESS API
+  description: BESC ESS API for energy saving.
+    
+# sample host
+host: 'carboapi.besc.online'
+basePath: '/besc-data/energysaving'
+
+# https will be used, http for dev purpose
+schemes:
+  - http
+  
+security:
+  - ApiKeyAuth: []   
+  
+paths:
+  '/project/{project_id}':
+    get:
+      summary: Get project saving last 5 data by default
+      description: Returns the project data.
+      operationId: getProjectRecords
+      parameters:
+      - name: project_id
+        in: path
+        description: Project id from the BESC project
+        required: true
+        type: string
+      
+      - name: offset
+        in: query
+        description: Fetching data start from n number of records in descending order.
+        required: false
+        type: integer
+        minimum: 0
+      
+      - name: limit
+        in: query
+        description: set total number of data to return back as response
+        required: false
+        type: integer
+        minimum: 1
+        maximum: 100
+      
+      - name: start_date
+        in: query
+        description: Fetching data after start date.
+        required: false
+        type: string
+    
+      - name: end_date
+        in: query
+        description: Fetching data before end date.
+        required: false
+        type: string
+          
+      responses:
+        '200':
+          description: success
+          schema:
+            $ref: '#/definitions/ProjectRecords'
+        '400':
+          description: invalid content
+        '401':
+          $ref: '#/responses/UnauthorizedError'
+        '409':
+          description: invalid argument
+    post:
+      summary: Receive project energy saving data
+      description: Receive project energy saving data
+      operationId: setProjectRecord
+      parameters:
+      - name: checksum
+        in: header
+        description: Checksum of the project data
+        required: true
+        type: string
+      - name: project_id
+        in: path
+        description: Project id from the BESC project
+        required: true
+        type: string
+      - name: DataInput
+        in: body
+        description: Project data input
+        required: true
+        schema:
+          type: object
+          $ref: '#/definitions/DataInput'
+      responses:
+        '200':
+          description: success
+          schema:
+            $ref: '#/definitions/DataPushResponse'
+        '400':
+          description: invalid content
+        '401':
+          $ref: '#/responses/UnauthorizedError'
+        '409':
+          description: invalid argument
+          
+  # will be removed from production
+  '/debugs/{project_id}/last':
+    get:
+      summary: Returns the last batch of project data that stored in the database.
+      description: Returns all the project data that stored into the database previously.
+      operationId: getLastProjectRecord
+      parameters:
+        - name: project_id
+          in: path
+          description: Project id from the BESC project
+          required: true
+          type: string
+            
+      responses:
+        '200':
+          description: success
+          schema:
+            type: array
+            items:
+              type: object
+        '400':
+          description: invalid content
+        '401':
+          $ref: '#/responses/UnauthorizedError'
+        '409':
+          description: invalid argument
+
+  '/blockchain/{project_id}/txHash/{txHash}':
+    get:
+      summary: Returns the last batch of project data that stored in the database.
+      description: Returns all the project data that stored into the database previously.
+      operationId: verifyTxHashRecord
+      parameters:
+        - name: project_id
+          in: path
+          description: Project id from the BESC project
+          required: true
+          type: string
+        - name: txHash
+          in: path
+          description: Transaction hash of the data in the blockchain
+          required: true
+          type: string
+            
+      responses:
+        '200':
+          description: success
+          schema:
+            type: array
+            items:
+              type: object
+        '400':
+          description: invalid content
+        '401':
+          $ref: '#/responses/UnauthorizedError'
+        '409':
+          description: invalid argument
+
+responses:
+  UnauthorizedError:
+    description: API key is missing or invalid
+    headers:
+      WWW_Authenticate:
+        type: string
+        
+definitions:
+
+  DataInput:
+    type: object
+    required:
+      - Data
+    description: Data input for energy saving
+    properties:
+      Data:
+        $ref: '#/definitions/Data'
+
+  ProjectRecords:
+    type: object
+    required:
+      - Data
+    properties:
+      Data:
+        type: array
+        items: 
+          $ref: '#/definitions/Data'
+  
+  Data:
+    type: object
+    required:
+      - Project
+      - DateTime
+      - Devices
+      - TotalEnergyUsage
+      - AverageRT
+      - Geolocation
+    properties:
+      Project:
+        type: string
+      DateTime:
+        type: string
+      Devices:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/Devices'
+      TotalEnergyUsage:
+        type : number
+      AverageRT:
+        type : number
+      Geolocation:
+        type: string
+  Devices:
+    type: object
+    required:
+      - DeviceId
+      - EnergyUsage
+    properties:
+      DeviceId:
+        type: string
+      EnergyUsage:
+        type: number
+          
+  DataPushResponse:
+    type: object
+    required:
+      - _id
+      - Project
+      - EnergySavingHash
+      - Status
+      - txHash
+    properties:
+      _id:
+        type: string
+        description: id for the whole data set
+      Project:
+        type: string
+        description: Project id
+      EnergySavingHash:
+        type: string
+        description: the hash generated for the energy saving hash
+      Status:
+        type: string
+        description:  the status of this data recorded
+        # Recorded - data saved locally
+        # Failed - fail to save data
+        # Transacted - energy data is calculated
+        enum: [Recorded, Failed, Transacted]
+      txHash:
+        type: string
+        description: the transaction hash that send to blockchain 
+  
+securityDefinitions:
+  # apikey: abcdef12345
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: apikey
+     
+consumes:
+  - application/json
+produces:
+  - application/json
