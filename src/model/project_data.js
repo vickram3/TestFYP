@@ -6,8 +6,8 @@ const crypto = require("crypto");
 class ProjectData{
 
     /**
+    * @param {string|number} datetime - DateTime in string
     * @param {string} project - Project Name
-    * @param {string} datetime - DateTime in string
     * @param {[Device]} devices - Device object
     * @param {number} totalEnergyUsage - TotalEnergyUsage
     * @param {number} averageRT - AverageRT
@@ -37,10 +37,12 @@ class ProjectData{
     */
     static creatWithCurrentTime(project_name, devices, totalEnergyUsage, averageRT, geolocation){
 
-        var dateNow = Date.now();
-        var formattedDateTime = dateUtil.formatDatetimeString(dateNow);
+        var dateNow = new Date();
 
-        return new ProjectData(formattedDateTime, project_name, devices, totalEnergyUsage, averageRT, geolocation);
+        // current date time as UTC format
+        var currentDateTime = dateNow.toJSON();
+
+        return new ProjectData(currentDateTime, project_name, devices, totalEnergyUsage, averageRT, geolocation);
     }
 
     validate(){

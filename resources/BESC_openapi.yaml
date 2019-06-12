@@ -263,9 +263,6 @@ components:
           type: number
         Geolocation:
           type: string
-        TxHash:
-          type: string
-          description: the transaction hash that send to blockchain
     Devices:
       required:
       - DeviceId
